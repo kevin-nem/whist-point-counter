@@ -27,20 +27,44 @@ function calculateRoundPoints({ bets, tricks, cardsThisRound }: { bets: number[]
   });
 }
 
+// Types explicites pour l'historique
+type GameRound = {
+  bets: number[];
+  tricks: number[];
+  points: number[];
+  cards: number;
+};
+
+type GameHistory = {
+  date: string;
+  playerNames: string[];
+  rounds: GameRound[];
+  finalScores: number[];
+  roundIdx: number;
+  inProgress: boolean;
+  gameName?: string;
+};
+
 export default function Home() {
   // Load history SSR-safe
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<GameHistory[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setHistory(JSON.parse(localStorage.getItem('ouiste-history') || '[]'));
+      const raw = localStorage.getItem('ouiste-history');
+      if (raw) {
+        setHistory(JSON.parse(raw) as GameHistory[]);
+      }
     }
   }, []);
 
   // When showing history modal, reload history
   useEffect(() => {
     if (showHistory && typeof window !== 'undefined') {
-      setHistory(JSON.parse(localStorage.getItem('ouiste-history') || '[]'));
+      const raw = localStorage.getItem('ouiste-history');
+      if (raw) {
+        setHistory(JSON.parse(raw) as GameHistory[]);
+      }
     }
   }, [showHistory]);
 
@@ -86,13 +110,13 @@ export default function Home() {
 
   // Resume game from history state
   const resumeGame = () => {
-    const last = history.find((g: any) => g.inProgress);
+    const last = history.find((g) => g.inProgress);
     if (!last) return;
     setPlayerNames(last.playerNames);
     setNumPlayers(last.playerNames.length);
     setScores(last.finalScores);
-    setAllBets(last.rounds.map((r: any) => r.bets));
-    setAllTricks(last.rounds.map((r: any) => r.tricks));
+    setAllBets(last.rounds.map((r) => r.bets));
+    setAllTricks(last.rounds.map((r) => r.tricks));
     setRoundIdx(last.roundIdx || 0);
     setPhase('bet');
     setGameOver(false);
@@ -100,7 +124,7 @@ export default function Home() {
     setGameSaved(false);
     setGameName(last.gameName || "");
   };
-  const hasInProgress = history.some((g: any) => g.inProgress);
+  const hasInProgress = history.some((g) => g.inProgress);
 
   // Player name and number logic (unchanged)
   const handleNumPlayersChange = (n: number) => {
@@ -211,9 +235,12 @@ export default function Home() {
       inProgress: !gameOver,
       gameName,
     };
-    let prev: any[] = [];
+    let prev: GameHistory[] = [];
     if (typeof window !== 'undefined') {
-      prev = JSON.parse(localStorage.getItem('ouiste-history') || '[]');
+      const raw = localStorage.getItem('ouiste-history');
+      if (raw) {
+        prev = JSON.parse(raw) as GameHistory[];
+      }
       localStorage.setItem('ouiste-history', JSON.stringify([game, ...prev]));
       setHistory([game, ...prev]);
     }
@@ -507,7 +534,7 @@ export default function Home() {
             {history.length === 0 ? (
               <div className="text-gray-600">Aucune partie sauvegardée.</div>
             ) : (
-              history.map((game: any, gIdx: number) => (
+              history.map((game, gIdx) => (
                 <div key={gIdx} className="mb-8 border-b pb-4">
                   <div className="mb-2 text-sm text-gray-700">{new Date(game.date).toLocaleString()}</div>
                   <div className="overflow-x-auto">
@@ -515,16 +542,16 @@ export default function Home() {
                       <thead>
                         <tr>
                           <th className="border px-2 py-1 bg-slate-50">Manche</th>
-                          {game.playerNames.map((name: string, i: number) => (
+                          {game.playerNames.map((name, i) => (
                             <th key={i} className="border px-2 py-1 bg-slate-50">{name}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {game.rounds.map((round: any, rIdx: number) => (
+                        {game.rounds.map((round, rIdx) => (
                           <tr key={rIdx}>
                             <td className="border px-2 py-1 font-semibold text-slate-800">{rIdx + 1} <br /><span className="text-xs text-gray-500">({round.cards} cartes)</span></td>
-                            {game.playerNames.map((_: string, pIdx: number) => (
+                            {game.playerNames.map((_, pIdx) => (
                               <td key={pIdx} className="border px-2 py-1">
                                 <div><span className="font-semibold">Mise :</span> {round.bets[pIdx]}</div>
                                 <div><span className="font-semibold">Plis :</span> {round.tricks[pIdx]}</div>
@@ -538,7 +565,7 @@ export default function Home() {
                   </div>
                   <div className="mt-2 font-semibold text-slate-800">Scores finaux :</div>
                   <ul className="mb-2">
-                    {game.playerNames.map((name: string, i: number) => (
+                    {game.playerNames.map((name, i) => (
                       <li key={i} className="flex justify-between text-gray-800"><span>{name}</span><span>{game.finalScores[i]}</span></li>
                     ))}
                   </ul>
