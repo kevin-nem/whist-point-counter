@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 6;
@@ -28,10 +28,22 @@ function calculateRoundPoints({ bets, tricks, cardsThisRound }: { bets: number[]
 }
 
 export default function Home() {
-  // Load history
-  const getHistory = () => {
-    return JSON.parse(localStorage.getItem('ouiste-history') || '[]');
-  };
+  // Load history SSR-safe
+  const [history, setHistory] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setHistory(JSON.parse(localStorage.getItem('ouiste-history') || '[]'));
+    }
+  }, []);
+
+  // When showing history modal, reload history
+  useEffect(() => {
+    if (showHistory && typeof window !== 'undefined') {
+      setHistory(JSON.parse(localStorage.getItem('ouiste-history') || '[]'));
+    }
+  }, [showHistory]);
+
   const [numPlayers, setNumPlayers] = useState<number>(MIN_PLAYERS);
   const [playerNames, setPlayerNames] = useState<string[]>(Array(MIN_PLAYERS).fill(""));
   const [started, setStarted] = useState(false);
@@ -50,7 +62,6 @@ export default function Home() {
   const betInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const trickInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   // For game history modal
-  const [showHistory, setShowHistory] = useState(false);
   const [gameSaved, setGameSaved] = useState(false);
   // Ajoute un champ "Nom de la partie" sur l'écran d'accueil
   const [gameName, setGameName] = useState("");
@@ -73,9 +84,8 @@ export default function Home() {
     setGameSaved(false);
   };
 
-  // Ajoute la logique pour reprendre une partie inachevée
+  // Resume game from history state
   const resumeGame = () => {
-    const history = getHistory();
     const last = history.find((g: any) => g.inProgress);
     if (!last) return;
     setPlayerNames(last.playerNames);
@@ -90,7 +100,7 @@ export default function Home() {
     setGameSaved(false);
     setGameName(last.gameName || "");
   };
-  const hasInProgress = getHistory().some((g: any) => g.inProgress);
+  const hasInProgress = history.some((g: any) => g.inProgress);
 
   // Player name and number logic (unchanged)
   const handleNumPlayersChange = (n: number) => {
@@ -183,7 +193,7 @@ export default function Home() {
     }
   };
 
-  // Save game to localStorage (now supports partial games)
+  // Save game and update history state
   const handleSaveGame = () => {
     // Build per-round points for completed rounds
     const rounds = allBets.map((bets: number[], roundIdx: number) => {
@@ -201,8 +211,12 @@ export default function Home() {
       inProgress: !gameOver,
       gameName,
     };
-    const prev = JSON.parse(localStorage.getItem('ouiste-history') || '[]');
-    localStorage.setItem('ouiste-history', JSON.stringify([game, ...prev]));
+    let prev: any[] = [];
+    if (typeof window !== 'undefined') {
+      prev = JSON.parse(localStorage.getItem('ouiste-history') || '[]');
+      localStorage.setItem('ouiste-history', JSON.stringify([game, ...prev]));
+      setHistory([game, ...prev]);
+    }
     setGameSaved(true);
     setTimeout(() => setGameSaved(false), 2000);
   };
@@ -490,10 +504,10 @@ export default function Home() {
               <h2 className="text-lg font-bold text-slate-800">Historique des parties</h2>
               <button className="text-slate-800 font-bold text-xl" onClick={() => setShowHistory(false)}>&times;</button>
             </div>
-            {getHistory().length === 0 ? (
+            {history.length === 0 ? (
               <div className="text-gray-600">Aucune partie sauvegardée.</div>
             ) : (
-              getHistory().map((game: any, gIdx: number) => (
+              history.map((game: any, gIdx: number) => (
                 <div key={gIdx} className="mb-8 border-b pb-4">
                   <div className="mb-2 text-sm text-gray-700">{new Date(game.date).toLocaleString()}</div>
                   <div className="overflow-x-auto">
