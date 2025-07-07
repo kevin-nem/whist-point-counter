@@ -28,6 +28,10 @@ function calculateRoundPoints({ bets, tricks, cardsThisRound }: { bets: number[]
 }
 
 export default function Home() {
+  // Load history
+  const getHistory = () => {
+    return JSON.parse(localStorage.getItem('ouiste-history') || '[]');
+  };
   const [numPlayers, setNumPlayers] = useState<number>(MIN_PLAYERS);
   const [playerNames, setPlayerNames] = useState<string[]>(Array(MIN_PLAYERS).fill(""));
   const [started, setStarted] = useState(false);
@@ -37,6 +41,7 @@ export default function Home() {
   const [tricks, setTricks] = useState<string[]>([]);
   const [phase, setPhase] = useState<'bet' | 'result'>('bet');
   const [allBets, setAllBets] = useState<number[][]>([]); // store all bets per round
+  const [allTricks, setAllTricks] = useState<number[][]>([]); // store all tricks per round
   const [gameOver, setGameOver] = useState(false);
   // For disabling buttons after click
   const [betSubmitting, setBetSubmitting] = useState(false);
@@ -47,6 +52,8 @@ export default function Home() {
   // For game history modal
   const [showHistory, setShowHistory] = useState(false);
   const [gameSaved, setGameSaved] = useState(false);
+  // Ajoute un champ "Nom de la partie" sur l'écran d'accueil
+  const [gameName, setGameName] = useState("");
 
   const roundSequence = useMemo(() => getRoundSequence(numPlayers), [numPlayers]);
   const totalRounds = roundSequence.length;
@@ -60,9 +67,30 @@ export default function Home() {
     setBets(Array(numPlayers).fill(""));
     setTricks(Array(numPlayers).fill(""));
     setAllBets([]);
+    setAllTricks([]);
     setGameOver(false);
     setStarted(true);
+    setGameSaved(false);
   };
+
+  // Ajoute la logique pour reprendre une partie inachevée
+  const resumeGame = () => {
+    const history = getHistory();
+    const last = history.find((g: any) => g.inProgress);
+    if (!last) return;
+    setPlayerNames(last.playerNames);
+    setNumPlayers(last.playerNames.length);
+    setScores(last.finalScores);
+    setAllBets(last.rounds.map((r: any) => r.bets));
+    setAllTricks(last.rounds.map((r: any) => r.tricks));
+    setRoundIdx(last.roundIdx || 0);
+    setPhase('bet');
+    setGameOver(false);
+    setStarted(true);
+    setGameSaved(false);
+    setGameName(last.gameName || "");
+  };
+  const hasInProgress = getHistory().some((g: any) => g.inProgress);
 
   // Player name and number logic (unchanged)
   const handleNumPlayersChange = (n: number) => {
@@ -120,6 +148,7 @@ export default function Home() {
   // --- Round submission logic ---
   const handleSubmitBets = () => {
     setAllBets((prev) => [...prev, bets.map((v) => parseInt(v, 10) || 0)]);
+    setAllTricks((prev) => [...prev, tricks.map((v) => parseInt(v, 10) || 0)]);
     setPhase('result');
   };
   const handleSubmitTricks = () => {
@@ -158,7 +187,7 @@ export default function Home() {
   const handleSaveGame = () => {
     // Build per-round points for completed rounds
     const rounds = allBets.map((bets: number[], roundIdx: number) => {
-      const tricks = allBets[roundIdx];
+      const tricks = allTricks[roundIdx];
       const cards = roundSequence[roundIdx];
       const points = calculateRoundPoints({ bets, tricks, cardsThisRound: cards });
       return { bets, tricks, points, cards };
@@ -170,15 +199,12 @@ export default function Home() {
       finalScores: scores,
       roundIdx,
       inProgress: !gameOver,
+      gameName,
     };
     const prev = JSON.parse(localStorage.getItem('ouiste-history') || '[]');
     localStorage.setItem('ouiste-history', JSON.stringify([game, ...prev]));
     setGameSaved(true);
     setTimeout(() => setGameSaved(false), 2000);
-  };
-  // Load history
-  const getHistory = () => {
-    return JSON.parse(localStorage.getItem('ouiste-history') || '[]');
   };
 
   // --- Game screens ---
@@ -398,6 +424,15 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-50">
       <h1 className="text-2xl font-semibold mb-6 text-center text-slate-800 border-b border-gray-300 pb-2">Compteur de points OUISTE</h1>
       <div className="w-full max-w-xs bg-white rounded-md shadow-sm p-4 flex flex-col gap-4">
+        <input
+          type="text"
+          className="rounded-md border border-gray-300 px-3 py-2 bg-white text-slate-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-slate-300 font-medium mb-2"
+          placeholder="Nom de la partie (optionnel)"
+          value={gameName}
+          onChange={e => setGameName(e.target.value)}
+          maxLength={32}
+          autoComplete="off"
+        />
         <label className="font-medium text-center text-slate-800">Nombre de joueurs</label>
         <div className="flex justify-center gap-2 mb-2">
           {Array.from({ length: MAX_PLAYERS - MIN_PLAYERS + 1 }, (_, i) => i + MIN_PLAYERS).map((n) => (
@@ -431,6 +466,14 @@ export default function Home() {
         >
           Démarrer la partie
         </button>
+        {hasInProgress && (
+          <button
+            className="w-full py-2 rounded-md bg-yellow-500 text-white font-semibold mb-2 hover:bg-yellow-600"
+            onClick={resumeGame}
+          >
+            Reprendre la partie en cours
+          </button>
+        )}
         <button
           className="w-full py-2 rounded-md bg-gray-100 text-slate-800 font-medium mt-2 border border-gray-300 hover:bg-slate-100"
           onClick={() => setShowHistory(true)}
