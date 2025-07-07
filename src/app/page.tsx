@@ -254,14 +254,6 @@ export default function Home() {
     if (gameOver) {
       const maxScore = Math.max(...scores);
       const winners = playerNames.filter((_, i) => scores[i] === maxScore);
-      const SaveButton = (
-        <button
-          className="mb-2 px-4 py-2 rounded-md bg-slate-800 text-white font-semibold w-full max-w-xs hover:bg-slate-700"
-          onClick={handleSaveGame}
-        >
-          Sauvegarder la partie
-        </button>
-      );
       return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white" style={{ backgroundColor: '#fff', position: 'relative' }}>
           <h2 className="text-xl font-semibold mb-4 text-slate-800 border-b border-gray-300 pb-2">Partie terminée</h2>
@@ -276,7 +268,14 @@ export default function Home() {
           <div className="mb-4 font-semibold text-yellow-600 text-lg">
             Gagnant{winners.length > 1 ? 's' : ''} : {winners.join(", ")}
           </div>
-          {!gameSaved && SaveButton}
+          {!gameSaved && (
+            <button
+              className="mb-2 px-4 py-2 rounded-md bg-slate-800 text-white font-semibold w-full max-w-xs hover:bg-slate-700"
+              onClick={handleSaveGame}
+            >
+              Sauvegarder la partie
+            </button>
+          )}
           {gameSaved && <div className="mb-2 text-green-600 font-semibold">Partie sauvegardée !</div>}
           <button
             className="mt-2 px-4 py-2 rounded-md bg-slate-800 text-white font-semibold w-full max-w-xs hover:bg-slate-700"
@@ -295,14 +294,6 @@ export default function Home() {
     }
     // --- Betting phase ---
     if (phase === 'bet') {
-      const SaveButton = (
-        <button
-          className="ml-2 px-3 py-1 rounded-md bg-slate-800 text-white text-xs font-medium shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400"
-          onClick={handleSaveGame}
-        >
-          Sauvegarder
-        </button>
-      );
       return (
         <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden px-4" style={{ backgroundColor: '#fff', position: 'relative' }}>
           {/* Progress Bar */}
@@ -376,14 +367,6 @@ export default function Home() {
     }
     // --- Tricks phase ---
     if (phase === 'result') {
-      const SaveButton = (
-        <button
-          className="ml-2 px-3 py-1 rounded-md bg-slate-800 text-white text-xs font-medium shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400"
-          onClick={handleSaveGame}
-        >
-          Sauvegarder
-        </button>
-      );
       return (
         <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden" style={{ backgroundColor: '#fff', position: 'relative' }}>
           {/* Progress Bar */}
