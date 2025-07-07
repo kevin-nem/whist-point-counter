@@ -163,7 +163,7 @@ export default function Home() {
     // --- Betting phase ---
     if (phase === 'bet') {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden">
+        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden px-4">
           {/* Progress Bar */}
           <div className="w-full max-w-xs mx-auto pt-4 pb-2">
             <div className="w-full bg-gray-200 rounded-full h-3">
@@ -172,11 +172,11 @@ export default function Home() {
                 style={{ width: `${((roundIdx + 1) / totalRounds) * 100}%` }}
               />
             </div>
-            <div className="text-center text-xs mt-1 text-gray-500">Round {roundIdx + 1} / {totalRounds}</div>
+            <div className="text-center text-xs mt-1 text-gray-700">Round {roundIdx + 1} / {totalRounds}</div>
           </div>
-          <div className="mb-2 text-center text-base font-medium">Cards this round: <span className="font-semibold text-lg">{cardsThisRound}</span></div>
-          <div className="mb-4 w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-6">
-            <h3 className="font-semibold mb-2 text-center text-lg">Enter Bets (Intended Tricks)</h3>
+          <div className="mb-2 text-center text-base font-medium text-gray-800">Cards this round: <span className="font-semibold text-lg text-blue-600">{cardsThisRound}</span></div>
+          <div className="mb-4 w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 flex flex-col gap-6">
+            <h3 className="font-semibold mb-2 text-center text-lg text-blue-600">Enter Bets (Intended Tricks)</h3>
             {playerNames.map((name, idx) => (
               <div key={idx} className="flex items-center gap-4 py-3 min-h-[44px]">
                 <span className="w-24 truncate text-base text-gray-800">{name}</span>
@@ -187,11 +187,12 @@ export default function Home() {
                   max={cardsThisRound}
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm text-center"
+                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm text-center bg-white text-gray-800 placeholder-gray-500"
                   value={bets[idx] || ""}
                   onChange={(e) => handleBetChange(idx, e.target.value)}
                   autoComplete="off"
                   autoFocus={idx === 0}
+                  placeholder={`Bet`}
                 />
               </div>
             ))}
@@ -199,18 +200,18 @@ export default function Home() {
               <div className="text-red-500 text-xs text-center">Total bets cannot equal number of cards ({cardsThisRound})</div>
             )}
           </div>
-          <div className="w-full max-w-xs bg-gray-50 rounded-lg shadow p-4 mt-4">
-            <h4 className="font-semibold mb-2 text-center text-base">Scores</h4>
+          <div className="w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 mt-4">
+            <h4 className="font-semibold mb-2 text-center text-base text-blue-600">Scores</h4>
             <ul className="flex flex-col gap-1">
               {playerNames.map((name, i) => (
-                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-lg">{scores[i]}</span></li>
+                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-xl">{scores[i]}</span></li>
               ))}
             </ul>
           </div>
           {/* Sticky Action Button */}
           <div className="fixed bottom-0 left-0 w-full flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pb-4 z-10">
             <button
-              className={`w-full max-w-xs py-4 text-lg rounded bg-blue-500 text-white font-semibold transition-transform active:scale-95 duration-100 ${canSubmitBets && !betSubmitting ? "opacity-100" : "opacity-60"}`}
+              className={`w-full max-w-xs py-4 text-lg rounded bg-blue-600 text-white font-semibold transition-transform active:scale-95 duration-100 ${canSubmitBets && !betSubmitting ? "opacity-100" : "opacity-60"}`}
               disabled={!canSubmitBets || betSubmitting}
               onClick={() => { setBetSubmitting(true); handleSubmitBets(); setTimeout(() => setBetSubmitting(false), 500); }}
               style={{ minHeight: 44 }}
@@ -283,7 +284,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-blue-100 to-white">
-      <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Whist Point Counter</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">OUISTE Point Counter</h1>
       <div className="w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-4">
         <label className="font-medium text-center text-gray-800">Number of Players</label>
         <div className="flex justify-center gap-2 mb-2">
@@ -319,7 +320,7 @@ export default function Home() {
           Start Game
         </button>
       </div>
-      <footer className="mt-8 text-xs text-gray-400 text-center">Coinche Lover• The K aka the Goat</footer>
+      <footer className="mt-8 text-xs text-gray-600 text-center bg-white">Coinche Lover • The K aka the Goat</footer>
     </div>
   );
 }
