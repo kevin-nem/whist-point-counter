@@ -167,7 +167,7 @@ export default function Home() {
     // --- Betting phase ---
     if (phase === 'bet') {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden px-4">
+        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden px-4" style={{ backgroundColor: '#fff' }}>
           {/* Progress Bar */}
           <div className="w-full max-w-xs mx-auto pt-4 pb-2">
             <div className="w-full bg-gray-200 rounded-full h-3">
@@ -208,7 +208,7 @@ export default function Home() {
             <h4 className="font-semibold mb-2 text-center text-base text-blue-600">Scores</h4>
             <ul className="flex flex-col gap-1">
               {playerNames.map((name, i) => (
-                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-xl">{scores[i]}</span></li>
+                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-xl text-gray-800">{scores[i]}</span></li>
               ))}
             </ul>
           </div>
@@ -229,7 +229,7 @@ export default function Home() {
     // --- Tricks phase ---
     if (phase === 'result') {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden">
+        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden" style={{ backgroundColor: '#fff' }}>
           {/* Progress Bar */}
           <div className="w-full max-w-xs mx-auto pt-4 pb-2">
             <div className="w-full bg-gray-200 rounded-full h-3">
@@ -273,7 +273,7 @@ export default function Home() {
             <h4 className="font-semibold mb-2 text-center text-base text-blue-600">Scores</h4>
             <ul className="flex flex-col gap-1">
               {playerNames.map((name, i) => (
-                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-xl">{scores[i]}</span></li>
+                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-xl text-gray-800">{scores[i]}</span></li>
               ))}
             </ul>
           </div>
