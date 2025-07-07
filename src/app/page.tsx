@@ -204,7 +204,7 @@ export default function Home() {
               <div className="text-red-500 text-xs text-center">Total bets cannot equal number of cards ({cardsThisRound})</div>
             )}
           </div>
-          <div className="w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 mt-4">
+          <div className="w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 mt-4 mb-24">
             <h4 className="font-semibold mb-2 text-center text-base text-blue-600">Scores</h4>
             <ul className="flex flex-col gap-1">
               {playerNames.map((name, i) => (
@@ -269,7 +269,7 @@ export default function Home() {
               <div className="text-red-500 text-xs text-center font-semibold">The total number of tricks won cannot exceed the number of cards in this round.</div>
             )}
           </div>
-          <div className="w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 mt-4">
+          <div className="w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 mt-4 mb-24">
             <h4 className="font-semibold mb-2 text-center text-base text-blue-600">Scores</h4>
             <ul className="flex flex-col gap-1">
               {playerNames.map((name, i) => (
