@@ -285,12 +285,12 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-blue-100 to-white">
       <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Whist Point Counter</h1>
       <div className="w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-4">
-        <label className="font-medium text-center">Number of Players</label>
+        <label className="font-medium text-center text-gray-800">Number of Players</label>
         <div className="flex justify-center gap-2 mb-2">
           {Array.from({ length: MAX_PLAYERS - MIN_PLAYERS + 1 }, (_, i) => i + MIN_PLAYERS).map((n) => (
             <button
               key={n}
-              className={`rounded-full w-10 h-10 flex items-center justify-center border-2 transition-colors ${numPlayers === n ? "bg-blue-500 text-white border-blue-500" : "bg-white text-blue-500 border-blue-300"}`}
+              className={`rounded-full w-10 h-10 flex items-center justify-center border-2 transition-colors text-lg font-semibold ${numPlayers === n ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-600 border-blue-400"}`}
               onClick={() => handleNumPlayersChange(n)}
             >
               {n}
@@ -302,7 +302,7 @@ export default function Home() {
             <input
               key={idx}
               type="text"
-              className="rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="rounded border px-3 py-3 bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
               placeholder={`Player ${idx + 1} name`}
               value={playerNames[idx] || ""}
               onChange={(e) => handleNameChange(idx, e.target.value)}
@@ -319,7 +319,7 @@ export default function Home() {
           Start Game
         </button>
       </div>
-      <footer className="mt-8 text-xs text-gray-400 text-center">Mobile-first • Whist Game Counter</footer>
+      <footer className="mt-8 text-xs text-gray-400 text-center">Coinche Lover• The K aka the Goat</footer>
     </div>
   );
 }
