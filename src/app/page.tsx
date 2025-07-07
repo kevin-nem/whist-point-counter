@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 6;
@@ -23,6 +23,12 @@ export default function Home() {
   const [phase, setPhase] = useState<'bet' | 'result'>('bet');
   const [allBets, setAllBets] = useState<number[][]>([]); // store all bets per round
   const [gameOver, setGameOver] = useState(false);
+  // For disabling buttons after click
+  const [betSubmitting, setBetSubmitting] = useState(false);
+  const [trickSubmitting, setTrickSubmitting] = useState(false);
+  // For autoFocus
+  const betInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const trickInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const roundSequence = useMemo(() => getRoundSequence(numPlayers), [numPlayers]);
   const totalRounds = roundSequence.length;
@@ -138,7 +144,7 @@ export default function Home() {
             <h3 className="font-semibold mb-2">Final Scores:</h3>
             <ul>
               {playerNames.map((name, i) => (
-                <li key={i} className="mb-1">{name}: {scores[i]}</li>
+                <li key={i} className="mb-1"><span className="text-gray-800">{name}</span>: {scores[i]}</li>
               ))}
             </ul>
           </div>
@@ -157,43 +163,60 @@ export default function Home() {
     // --- Betting phase ---
     if (phase === 'bet') {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-          <h2 className="text-xl font-bold mb-2">Round {roundIdx + 1} / {totalRounds}</h2>
-          <div className="mb-2 text-center text-sm">Cards this round: <span className="font-semibold">{cardsThisRound}</span></div>
+        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden">
+          {/* Progress Bar */}
+          <div className="w-full max-w-xs mx-auto pt-4 pb-2">
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-blue-400 h-3 rounded-full transition-all"
+                style={{ width: `${((roundIdx + 1) / totalRounds) * 100}%` }}
+              />
+            </div>
+            <div className="text-center text-xs mt-1 text-gray-500">Round {roundIdx + 1} / {totalRounds}</div>
+          </div>
+          <div className="mb-2 text-center text-base font-medium">Cards this round: <span className="font-semibold text-lg">{cardsThisRound}</span></div>
           <div className="mb-4 w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-6">
-            <h3 className="font-semibold mb-2 text-center">Enter Bets (Intended Tricks)</h3>
+            <h3 className="font-semibold mb-2 text-center text-lg">Enter Bets (Intended Tricks)</h3>
             {playerNames.map((name, idx) => (
-              <div key={idx} className="flex items-center gap-4 py-2">
-                <span className="w-24 truncate text-base">{name}</span>
+              <div key={idx} className="flex items-center gap-4 py-3 min-h-[44px]">
+                <span className="w-24 truncate text-base text-gray-800">{name}</span>
                 <input
+                  ref={el => { betInputRefs.current[idx] = el; }}
                   type="number"
                   min="0"
                   max={cardsThisRound}
-                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm text-center"
                   value={bets[idx] || ""}
                   onChange={(e) => handleBetChange(idx, e.target.value)}
                   autoComplete="off"
+                  autoFocus={idx === 0}
                 />
               </div>
             ))}
             {betsError && (
               <div className="text-red-500 text-xs text-center">Total bets cannot equal number of cards ({cardsThisRound})</div>
             )}
+          </div>
+          <div className="w-full max-w-xs bg-gray-50 rounded-lg shadow p-4 mt-4">
+            <h4 className="font-semibold mb-2 text-center text-base">Scores</h4>
+            <ul className="flex flex-col gap-1">
+              {playerNames.map((name, i) => (
+                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-lg">{scores[i]}</span></li>
+              ))}
+            </ul>
+          </div>
+          {/* Sticky Action Button */}
+          <div className="fixed bottom-0 left-0 w-full flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pb-4 z-10">
             <button
-              className={`mt-2 w-full py-4 text-lg rounded bg-blue-500 text-white font-semibold transition-opacity ${canSubmitBets ? "opacity-100" : "opacity-60"}`}
-              disabled={!canSubmitBets}
-              onClick={handleSubmitBets}
+              className={`w-full max-w-xs py-4 text-lg rounded bg-blue-500 text-white font-semibold transition-transform active:scale-95 duration-100 ${canSubmitBets && !betSubmitting ? "opacity-100" : "opacity-60"}`}
+              disabled={!canSubmitBets || betSubmitting}
+              onClick={() => { setBetSubmitting(true); handleSubmitBets(); setTimeout(() => setBetSubmitting(false), 500); }}
+              style={{ minHeight: 44 }}
             >
               Lock Bets
             </button>
-          </div>
-          <div className="w-full max-w-xs bg-gray-50 rounded-lg shadow p-4 mt-4">
-            <h4 className="font-semibold mb-2 text-center">Scores</h4>
-            <ul className="flex flex-col gap-1">
-              {playerNames.map((name, i) => (
-                <li key={i} className="flex justify-between"><span>{name}</span><span>{scores[i]}</span></li>
-              ))}
-            </ul>
           </div>
         </div>
       );
@@ -201,40 +224,57 @@ export default function Home() {
     // --- Tricks phase ---
     if (phase === 'result') {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-          <h2 className="text-xl font-bold mb-2">Round {roundIdx + 1} / {totalRounds}</h2>
-          <div className="mb-2 text-center text-sm">Cards this round: <span className="font-semibold">{cardsThisRound}</span></div>
+        <div className="flex flex-col items-center justify-center min-h-screen p-0 bg-white overflow-x-hidden">
+          {/* Progress Bar */}
+          <div className="w-full max-w-xs mx-auto pt-4 pb-2">
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-blue-400 h-3 rounded-full transition-all"
+                style={{ width: `${((roundIdx + 1) / totalRounds) * 100}%` }}
+              />
+            </div>
+            <div className="text-center text-xs mt-1 text-gray-500">Round {roundIdx + 1} / {totalRounds}</div>
+          </div>
+          <div className="mb-2 text-center text-base font-medium">Cards this round: <span className="font-semibold text-lg">{cardsThisRound}</span></div>
           <div className="mb-4 w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-6">
-            <h3 className="font-semibold mb-2 text-center">Enter Tricks Won</h3>
+            <h3 className="font-semibold mb-2 text-center text-lg">Enter Tricks Won</h3>
             {playerNames.map((name, idx) => (
-              <div key={idx} className="flex items-center gap-4 py-2">
-                <span className="w-24 truncate text-base">{name}</span>
+              <div key={idx} className="flex items-center gap-4 py-3 min-h-[44px]">
+                <span className="w-24 truncate text-base text-gray-800">{name}</span>
                 <input
+                  ref={el => { trickInputRefs.current[idx] = el; }}
                   type="number"
                   min="0"
                   max={cardsThisRound}
-                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm text-center"
                   value={tricks[idx] || ""}
                   onChange={(e) => handleTrickChange(idx, e.target.value)}
                   autoComplete="off"
+                  autoFocus={idx === 0}
                 />
               </div>
             ))}
+          </div>
+          <div className="w-full max-w-xs bg-gray-50 rounded-lg shadow p-4 mt-4">
+            <h4 className="font-semibold mb-2 text-center text-base">Scores</h4>
+            <ul className="flex flex-col gap-1">
+              {playerNames.map((name, i) => (
+                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-lg">{scores[i]}</span></li>
+              ))}
+            </ul>
+          </div>
+          {/* Sticky Action Button */}
+          <div className="fixed bottom-0 left-0 w-full flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pb-4 z-10">
             <button
-              className={`mt-2 w-full py-4 text-lg rounded bg-blue-500 text-white font-semibold transition-opacity ${canSubmitTricks ? "opacity-100" : "opacity-60"}`}
-              disabled={!canSubmitTricks}
-              onClick={handleSubmitTricks}
+              className={`w-full max-w-xs py-4 text-lg rounded bg-blue-500 text-white font-semibold transition-transform active:scale-95 duration-100 ${canSubmitTricks && !trickSubmitting ? "opacity-100" : "opacity-60"}`}
+              disabled={!canSubmitTricks || trickSubmitting}
+              onClick={() => { setTrickSubmitting(true); handleSubmitTricks(); setTimeout(() => setTrickSubmitting(false), 500); }}
+              style={{ minHeight: 44 }}
             >
               Submit Tricks
             </button>
-          </div>
-          <div className="w-full max-w-xs bg-gray-50 rounded-lg shadow p-4 mt-4">
-            <h4 className="font-semibold mb-2 text-center">Scores</h4>
-            <ul className="flex flex-col gap-1">
-              {playerNames.map((name, i) => (
-                <li key={i} className="flex justify-between"><span>{name}</span><span>{scores[i]}</span></li>
-              ))}
-            </ul>
           </div>
         </div>
       );
@@ -243,7 +283,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-blue-100 to-white">
-      <h1 className="text-2xl font-bold mb-6 text-center">Whist Point Counter</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Whist Point Counter</h1>
       <div className="w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-4">
         <label className="font-medium text-center">Number of Players</label>
         <div className="flex justify-center gap-2 mb-2">
