@@ -84,6 +84,11 @@ export default function Home() {
   const betsError = bets.every((val) => val.trim() !== "") && betsSum === cardsThisRound;
 
   // --- Tricks phase ---
+  const tricksOverLimit = tricks.some((val) => (parseInt(val, 10) || 0) > cardsThisRound);
+  const tricksSum = tricks.reduce((sum, val) => sum + (parseInt(val, 10) || 0), 0);
+  const tricksSumOver = tricksSum > cardsThisRound;
+  const canSubmitTricks = tricks.every((val) => val.trim() !== "") && !tricksOverLimit && !tricksSumOver;
+
   const handleTrickChange = (idx: number, value: string) => {
     if (/^\d{0,2}$/.test(value)) {
       setTricks((prev) => {
@@ -93,7 +98,6 @@ export default function Home() {
       });
     }
   };
-  const canSubmitTricks = tricks.every((val) => val.trim() !== "");
 
   // --- Round submission logic ---
   const handleSubmitBets = () => {
@@ -234,11 +238,11 @@ export default function Home() {
                 style={{ width: `${((roundIdx + 1) / totalRounds) * 100}%` }}
               />
             </div>
-            <div className="text-center text-xs mt-1 text-gray-500">Round {roundIdx + 1} / {totalRounds}</div>
+            <div className="text-center text-xs mt-1 text-gray-700">Round {roundIdx + 1} / {totalRounds}</div>
           </div>
-          <div className="mb-2 text-center text-base font-medium">Cards this round: <span className="font-semibold text-lg">{cardsThisRound}</span></div>
-          <div className="mb-4 w-full max-w-xs bg-white rounded-lg shadow p-4 flex flex-col gap-6">
-            <h3 className="font-semibold mb-2 text-center text-lg">Enter Tricks Won</h3>
+          <div className="mb-2 text-center text-base font-medium text-gray-800">Cards this round: <span className="font-semibold text-lg text-blue-600">{cardsThisRound}</span></div>
+          <div className="mb-4 w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 flex flex-col gap-6">
+            <h3 className="font-semibold mb-2 text-center text-lg text-blue-600">Enter Tricks Won</h3>
             {playerNames.map((name, idx) => (
               <div key={idx} className="flex items-center gap-4 py-3 min-h-[44px]">
                 <span className="w-24 truncate text-base text-gray-800">{name}</span>
@@ -249,27 +253,34 @@ export default function Home() {
                   max={cardsThisRound}
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm text-center"
+                  className="rounded border px-4 py-4 w-24 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm text-center bg-white text-gray-800 placeholder-gray-500"
                   value={tricks[idx] || ""}
                   onChange={(e) => handleTrickChange(idx, e.target.value)}
                   autoComplete="off"
                   autoFocus={idx === 0}
+                  placeholder={`Tricks`}
                 />
               </div>
             ))}
+            {tricksOverLimit && (
+              <div className="text-red-500 text-xs text-center font-semibold">A player cannot win more tricks than the number of cards in this round.</div>
+            )}
+            {tricksSumOver && (
+              <div className="text-red-500 text-xs text-center font-semibold">The total number of tricks won cannot exceed the number of cards in this round.</div>
+            )}
           </div>
-          <div className="w-full max-w-xs bg-gray-50 rounded-lg shadow p-4 mt-4">
-            <h4 className="font-semibold mb-2 text-center text-base">Scores</h4>
+          <div className="w-full max-w-xs bg-white rounded-lg shadow px-4 py-4 mt-4">
+            <h4 className="font-semibold mb-2 text-center text-base text-blue-600">Scores</h4>
             <ul className="flex flex-col gap-1">
               {playerNames.map((name, i) => (
-                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-lg">{scores[i]}</span></li>
+                <li key={i} className="flex justify-between min-h-[44px]"><span className="text-gray-800">{name}</span><span className="text-xl">{scores[i]}</span></li>
               ))}
             </ul>
           </div>
           {/* Sticky Action Button */}
           <div className="fixed bottom-0 left-0 w-full flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pb-4 z-10">
             <button
-              className={`w-full max-w-xs py-4 text-lg rounded bg-blue-500 text-white font-semibold transition-transform active:scale-95 duration-100 ${canSubmitTricks && !trickSubmitting ? "opacity-100" : "opacity-60"}`}
+              className={`w-full max-w-xs py-4 text-lg rounded bg-blue-600 text-white font-semibold transition-transform active:scale-95 duration-100 ${canSubmitTricks && !trickSubmitting ? "opacity-100" : "opacity-60"}`}
               disabled={!canSubmitTricks || trickSubmitting}
               onClick={() => { setTrickSubmitting(true); handleSubmitTricks(); setTimeout(() => setTrickSubmitting(false), 500); }}
               style={{ minHeight: 44 }}
@@ -320,7 +331,7 @@ export default function Home() {
           Start Game
         </button>
       </div>
-      <footer className="mt-8 text-xs text-gray-600 text-center bg-white">Coinche Lover • The K aka the Goat</footer>
+      <footer className="mt-8 text-xs text-gray-600 text-center bg-white">Ouiste Lover • The K aka the Goat</footer>
     </div>
   );
 }
